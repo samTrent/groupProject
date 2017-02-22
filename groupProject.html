@@ -1,0 +1,166 @@
+<html>
+	<head>
+
+		<title>Cube stuff</title>
+
+</head>
+<body>
+
+
+
+	<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+	<script src="../js/three.min.js"></script>
+
+	<!-- needed for controls -->
+	<script src="PointerLockControlsRedux.js"></script>
+
+	<script>
+		"use strict"
+		// Note!!! you must have a sub folder called "js" at the same directory level
+		//         as this folder.
+		var scene, camera, renderer;
+		var geometry, material, mesh;
+
+
+
+		// set up player controls
+		initPointerLock();
+
+
+		// loading textures
+		var floorTexture = new THREE.TextureLoader().load("carpet1.jpg");
+		floorTexture.repeat.set(1,1);
+
+		var wallTexture = new THREE.TextureLoader().load("wall5.jpg");
+		wallTexture.repeat.set(1,1);
+
+		//floor object
+		var Floor = {
+
+			createfloor: function(x, y ,z)
+			{
+				geometry = new THREE.BoxGeometry( 10000, 10, 10000 );
+				material = new THREE.MeshPhongMaterial( {  map: floorTexture, wireframe: false});
+				// a mesh needs the geometry (aka lines and points) and material (aka surface)
+				mesh = new THREE.Mesh( geometry, material );
+
+				//the floor does not cast a shadow but it does receive!!
+				mesh.castShadow = false;
+				mesh.receiveShadow = true;
+
+
+				mesh.position.set(x, y, z);
+
+				scene.add( mesh );
+
+			},
+
+
+		}
+
+		var Wall = {
+
+			mesh: new THREE.Mesh(),
+
+			createWall: function(x, y ,z)
+			{													//			height	width
+				geometry = new THREE.PlaneGeometry( 10000,   5100, 32 );
+				material = new THREE.MeshPhongMaterial( {  map: wallTexture, wireframe: false, side: THREE.DoubleSide});
+				// a mesh needs the geometry (aka lines and points) and material (aka surface)
+				this.mesh = new THREE.Mesh( geometry, material );
+
+				//the wall does not cast a shadow but it does receive!!
+				this.mesh.castShadow = false;
+				this.mesh.receiveShadow = true;
+
+
+
+				this.mesh.position.set(x, y, z);
+
+				scene.add( this.mesh );
+			},
+
+			rotateWall: function(y)
+			{
+				this.mesh.rotateY(y);
+				// this.mesh.rotation.y = y;
+			}
+
+
+		}
+
+
+
+
+		init();
+		animate();
+
+
+
+
+		// *** BEGIN ***
+
+
+		function init() {
+			// Create the main scene for the 3D drawing
+			scene = new THREE.Scene();
+			// Every scene needs a camera
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100000);
+
+			// general light above the room
+			var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+			scene.add( light );
+
+			// set up all the player controls
+			setupControls(camera);
+
+
+			//add floor
+			var floor = Object.create(Floor);
+			floor.createfloor(0,-190, -5000);
+
+			// add walls
+			var backWall = Object.create(Wall);
+			backWall.createWall(0,2100,0);
+
+			var frontWall = Object.create(Wall);
+			frontWall.createWall(0,2100,-10000);
+
+			var leftWall = Object.create(Wall);
+			leftWall.createWall(-5000,2100,-5000);
+			leftWall.rotateWall(4.7124); // rotate the wall to its right
+
+			var rightWall = Object.create(Wall);
+			rightWall.createWall(5000,2100,-5000);
+			rightWall.rotateWall(4.7124); // rotate the wall to its right
+
+
+			// the renderer renders the scene using the objects, lights and camera
+			renderer = new THREE.WebGLRenderer();
+
+			renderer.setPixelRatio( window.devicePixelRatio );
+
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			// Attach the threeJS renderer to the HTML page
+			document.body.appendChild( renderer.domElement );
+		}
+
+		// This is the game/animation loop
+		function animate() {
+			requestAnimationFrame( animate );
+
+
+			//for player, update pos
+			updateMovement(2000);
+
+
+			//draw all
+			renderer.render( scene, camera );
+
+
+		}
+</script>
+
+</body>
+</html>
